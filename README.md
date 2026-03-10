@@ -1,7 +1,3 @@
-Here is the revised ReadMe, completely stripped of any "Proof of Value" or sales language, reframed entirely as a professional Browser Security Testing suite.
-
----
-
 # Advanced Browser Security Tester
 
 ## Overview
