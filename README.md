@@ -14,7 +14,10 @@ Legacy network security inspects traffic *as it flies by over the wire*. Modern 
 
 1. Open `index.html` (or the hosted page) in the browser/environment you want to test.
 2. Click **Run Full Assessment** to execute the analytical modules automatically, or work through each tab manually.
-3. For attack simulations, click each **dashboard tile** to record whether your stack **Blocked 🛡️** or **Bypassed ❌** the test. The **Posture Score** gauge updates live (Grade A–F).
+3. **Read the verdict honestly.** A web page **cannot** see whether your browser or SWG blocked something, so this tool does not pretend to:
+   - The **URL scanner, malicious-site, and DLP** probes auto-classify from what the page *can* observe (whether a request actually left the browser).
+   - Everything else — especially **file downloads** — runs the simulation and marks the tile **"Ran — verify ⏳"**. Confirm the real outcome in your endpoint / enterprise-browser logs (e.g. Strata Cloud Manager), your download folder, and the DevTools console, then click the tile to set **Blocked 🛡️** or **Bypassed ❌**.
+   - The **Posture Score** gauge (Grade A–F) only counts tiles you've classified.
 4. Use **Export Scorecard 📥** to save a PNG of the dashboard for audits and reports.
 
 Run it first in a baseline environment (network controls only), then again inside your protected environment, and compare the scores.
