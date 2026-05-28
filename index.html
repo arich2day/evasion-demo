@@ -373,7 +373,7 @@
                 <div class="quish-row">
                     <div style="flex: 1; text-align: center; padding-right: 15px;"><a href="#" class="quish-trigger quish-link">iOS - PANW Mobile<br>Access App</a></div>
                     <div class="qr-container quish-trigger">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=http://urlfiltering.paloaltonetworks.com/test-phishing" alt="iOS QR Code" class="quish-qr">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://urlfiltering.paloaltonetworks.com/test-phishing" alt="iOS QR Code" class="quish-qr">
                         <div class="phone-overlay"><div class="phone-screen"><div class="scan-line"></div><div class="phone-text">Scanning...</div></div></div>
                     </div>
                 </div>
@@ -894,7 +894,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             trigger.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 setBadgeStatus('badge-quish', 'status-fired', 'Payload Executed ⚠️');
-                window.open('http://urlfiltering.paloaltonetworks.com/test-phishing', '_blank');
+                window.open('https://urlfiltering.paloaltonetworks.com/test-phishing', '_blank');
             });
         });
 
@@ -1147,7 +1147,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             toggleBtnState(btnId, true);
             updateLog('log9', '', true);
             setBadgeStatus('badge-phish', 'status-fired', 'Page Rendered ⚠️');
-            const phishUrl = 'http://urlfiltering.paloaltonetworks.com/test-phishing';
+            const phishUrl = 'https://urlfiltering.paloaltonetworks.com/test-phishing';
             updateLog('log9', `Attempting to reach known phishing test URL: ${phishUrl}`);
             const reached = await probeReachable(phishUrl);
             if (reached) {
@@ -1160,7 +1160,12 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
         }
 
         // Heuristic reachability probe: resolves true if request completes, false if network/policy blocks it.
+        // Auto-upgrades http -> https when running on an HTTPS page (e.g. GitHub Pages) so the
+        // browser's mixed-content blocker doesn't masquerade as a security-control block.
         function probeReachable(url, timeoutMs = 5000) {
+            if (location.protocol === 'https:' && url.startsWith('http://')) {
+                url = 'https://' + url.slice('http://'.length);
+            }
             return new Promise(resolve => {
                 let done = false;
                 const finish = (v) => { if (!done) { done = true; resolve(v); } };
@@ -1257,7 +1262,7 @@ document.<span class="var">write</span>(<span class="str">'&lt;script&gt;'</span
             updateLog('log11', '', true);
             setBadgeStatus('badge-malsite', 'status-fired', 'Testing ⚠️');
             const targets = [
-                { name: 'Palo Alto URL-filtering test', url: 'http://urlfiltering.paloaltonetworks.com/test-malware' },
+                { name: 'Palo Alto URL-filtering test', url: 'https://urlfiltering.paloaltonetworks.com/test-malware' },
                 { name: 'AMTSO malware-download test', url: 'https://www.amtso.org/feature-settings-check-download/' },
                 { name: 'AMTSO phishing-page test', url: 'https://www.amtso.org/feature-settings-check-phishing-page/' },
                 { name: 'EICAR test file host', url: 'https://secure.eicar.org/eicar.com' }
